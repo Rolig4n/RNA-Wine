@@ -41,7 +41,7 @@ public class RnaWine {
         int nroIteracoes = 20000;
         boolean geraBaseValidacao = false;
         boolean normalizaBase = false;
-
+        List<Estatistica> lstEstatistica = new ArrayList<Estatistica>();
         //dados arquivo
         String arquivo = "C:/Users/hiago/Downloads/BaseWine/wine.data";
         List<Wine> base = readFile(arquivo);
@@ -53,7 +53,7 @@ public class RnaWine {
         }
 
         //laço de N vezes
-        for (int nroTestes = 0; nroTestes <= 1; nroTestes++) {
+        for (int nroTestes = 0; nroTestes <= 999; nroTestes++) {
             double[] wc1;
             double[] wc2;
             double[] wc3;
@@ -66,7 +66,6 @@ public class RnaWine {
             oRnaC1.setW(pesoW);
             oRnaC1.setMaxInt(nroIteracoes);
 
-            List<Estatistica> lstEstatistica = new ArrayList<Estatistica>();
             for (int k = 0; k <= 100; k++) {
                 /*if (geraBaseValidacao) {
                 wc1 = oRnaC1.treinar(baseTreina, baseValida);
@@ -78,12 +77,12 @@ public class RnaWine {
                 Estatistica oEstatistica = oRnaC1.testarTreinamento(baseTeste, wc1);
                 lstEstatistica.add(oEstatistica);
             }
-            try {
-                geraCSV(lstEstatistica,"estat_C1.csv");
-            } catch (IOException ex) {
-                Logger.getLogger(RnaWine.class.getName()).log(Level.SEVERE, null, ex);
-            }
             System.out.println("Teste!");
+        }
+        try {
+            geraCSV(lstEstatistica, "estat_C1.csv");
+        } catch (IOException ex) {
+            Logger.getLogger(RnaWine.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -228,7 +227,7 @@ public class RnaWine {
         double valorVariancia = somatorio / tamanhoVetor;
         //desvio padrao - raiz quadrada da variancia
         double valorDesvioPadrao = Math.sqrt(valorVariancia);
-        return somatorio;
+        return valorDesvioPadrao;
     }
     //FIM Metodos matematicos
 
@@ -279,7 +278,7 @@ public class RnaWine {
             //com validacao
             tamBaseTreina = nroBaseTreinaC1 + nroBaseTreinaC2 + nroBaseTreinaC3;
             tamBaseValida = nroBaseValidaC1 + nroBaseValidaC2 + nroBaseValidaC3;
-            tamBaseTeste = nroBaseTesteC1 + nroBaseTesteC2 + nroBaseTesteC3;
+            tamBaseTeste = lstWine.size() - (tamBaseTreina + tamBaseValida);
             baseTreina = new double[tamBaseTreina][15];
             baseValida = new double[tamBaseValida][15];
             baseTeste = new double[tamBaseTeste][15];
@@ -287,7 +286,7 @@ public class RnaWine {
             //sem validacao
             tamBaseTreina = nroBaseTreinaC1 + nroBaseTreinaC2 + nroBaseTreinaC3;
             tamBaseValida = 0;
-            tamBaseTeste = lstWine.size() - (tamBaseTreina - tamBaseValida);
+            tamBaseTeste = lstWine.size() - (tamBaseTreina + tamBaseValida);
             baseTreina = new double[tamBaseTreina][15];
             baseTeste = new double[tamBaseTeste][15];
         }
@@ -304,125 +303,160 @@ public class RnaWine {
             int valorD = 0;
             if (oSepara.getClasseWine() == classe) {
                 valorD = 1;
-                /*
+            }
+            /*
                  sorteia qual base vai receboer o elemento proprocional
                  tamanha da base respeitando o tamanho de casa base
-                 */
-                boolean passa;
-                do {
-                    passa = true;
-                    int nroRandomico = randBase.nextInt(99);
-                    if (tamBaseValida > 0) {
-                        if (nroRandomico >= 69) {
-                            sorteia = 1;
-                        } else if (nroRandomico > 69 && nroRandomico <= 84) {
-                            sorteia = 2;
-                        } else if (nroRandomico > 84 && nroRandomico <= 99) {
-                            sorteia = 3;
-                        }
-                    } else {
-                        if (nroRandomico <= 69) {
-                            sorteia = 1;
-                        } else if (nroRandomico > 69 && nroRandomico <= 99) {
-                            sorteia = 2;
-                        }
+             */
+            boolean passa;
+            do {
+                passa = true;
+                int nroRandomico = randBase.nextInt(99);
+                if (tamBaseValida > 0) {
+                    if (nroRandomico <= 69) {
+                        sorteia = 1;
+                    } else if (nroRandomico > 69 && nroRandomico <= 84) {
+                        sorteia = 2;
+                    } else if (nroRandomico > 84 && nroRandomico <= 99) {
+                        sorteia = 3;
                     }
-                    int classeElemento = oSepara.getClasseWine();
-                    //valida sorteio
-                    if (sorteia == 1 && linhaBase1 < tamBaseTreina
-                            && ((oSepara.getClasseWine() == 1 && ctaBase1Classe1 < nroBaseTreinaC1)
-                            || (oSepara.getClasseWine() == 2 && ctaBase1Classe2 < nroBaseTreinaC2)
-                            || (oSepara.getClasseWine() == 2 && ctaBase1Classe3 < nroBaseTreinaC3))) {
-                        passa = false;
-                    } else if (sorteia == 2 && linhaBase2 < tamBaseTeste
-                            && ((oSepara.getClasseWine() == 1 && ctaBase2Classe1 < nroBaseTesteC1)
-                            || (oSepara.getClasseWine() == 2 && ctaBase2Classe2 < nroBaseTesteC2)
-                            || (oSepara.getClasseWine() == 2 && ctaBase2Classe3 < nroBaseTesteC3))) {
-                        passa = false;
-                    } else if (sorteia == 3 && linhaBase3 < tamBaseValida
-                            && ((oSepara.getClasseWine() == 1 && ctaBase3Classe1 < nroBaseValidaC1)
-                            || (oSepara.getClasseWine() == 2 && ctaBase3Classe2 < nroBaseValidaC2)
-                            || (oSepara.getClasseWine() == 2 && ctaBase3Classe3 < nroBaseValidaC3))) {
-                        passa = false;
-                    }
-                } while (passa);
-
-                if (sorteia == 1) {
-                    //base treinamento
-                    baseTreina[linhaBase1][0] = oSepara.getA1();
-                    baseTreina[linhaBase1][1] = oSepara.getA2();
-                    baseTreina[linhaBase1][2] = oSepara.getA3();
-                    baseTreina[linhaBase1][3] = oSepara.getA4();
-                    baseTreina[linhaBase1][4] = oSepara.getA5();
-                    baseTreina[linhaBase1][5] = oSepara.getA6();
-                    baseTreina[linhaBase1][6] = oSepara.getA7();
-                    baseTreina[linhaBase1][7] = oSepara.getA8();
-                    baseTreina[linhaBase1][8] = oSepara.getA9();
-                    baseTreina[linhaBase1][9] = oSepara.getA10();
-                    baseTreina[linhaBase1][10] = oSepara.getA11();
-                    baseTreina[linhaBase1][11] = oSepara.getA12();
-                    baseTreina[linhaBase1][12] = oSepara.getA13();
-                    baseTreina[linhaBase1][13] = oSepara.getClasseWine();
-                    baseTreina[linhaBase1][14] = valorD;
-                    linhaBase1++;
-                    if (oSepara.getClasseWine() == 1) {
-                        ctaBase1Classe1++;
-                    } else if (oSepara.getClasseWine() == 2) {
-                        ctaBase1Classe2++;
-                    } else if (oSepara.getClasseWine() == 3) {
-                        ctaBase1Classe3++;
-                    }
-                } else if (sorteia == 2) {
-                    //base teste
-                    baseTeste[linhaBase2][0] = oSepara.getA1();
-                    baseTeste[linhaBase2][1] = oSepara.getA2();
-                    baseTeste[linhaBase2][2] = oSepara.getA3();
-                    baseTeste[linhaBase2][3] = oSepara.getA4();
-                    baseTeste[linhaBase2][4] = oSepara.getA5();
-                    baseTeste[linhaBase2][5] = oSepara.getA6();
-                    baseTeste[linhaBase2][6] = oSepara.getA7();
-                    baseTeste[linhaBase2][7] = oSepara.getA8();
-                    baseTeste[linhaBase2][8] = oSepara.getA9();
-                    baseTeste[linhaBase2][9] = oSepara.getA10();
-                    baseTeste[linhaBase2][10] = oSepara.getA11();
-                    baseTeste[linhaBase2][11] = oSepara.getA12();
-                    baseTeste[linhaBase2][12] = oSepara.getA13();
-                    baseTeste[linhaBase2][13] = oSepara.getClasseWine();
-                    baseTeste[linhaBase2][14] = valorD;
-                    linhaBase2++;
-                    if (oSepara.getClasseWine() == 1) {
-                        ctaBase2Classe1++;
-                    } else if (oSepara.getClasseWine() == 2) {
-                        ctaBase2Classe2++;
-                    } else if (oSepara.getClasseWine() == 3) {
-                        ctaBase2Classe3++;
-                    }
-                } else if (sorteia == 3) {
-                    //base valida
-                    baseValida[linhaBase3][0] = oSepara.getA1();
-                    baseValida[linhaBase3][1] = oSepara.getA2();
-                    baseValida[linhaBase3][2] = oSepara.getA3();
-                    baseValida[linhaBase3][3] = oSepara.getA4();
-                    baseValida[linhaBase3][4] = oSepara.getA5();
-                    baseValida[linhaBase3][5] = oSepara.getA6();
-                    baseValida[linhaBase3][6] = oSepara.getA7();
-                    baseValida[linhaBase3][7] = oSepara.getA8();
-                    baseValida[linhaBase3][8] = oSepara.getA9();
-                    baseValida[linhaBase3][9] = oSepara.getA10();
-                    baseValida[linhaBase3][10] = oSepara.getA11();
-                    baseValida[linhaBase3][11] = oSepara.getA12();
-                    baseValida[linhaBase3][12] = oSepara.getA13();
-                    baseValida[linhaBase3][13] = oSepara.getClasseWine();
-                    baseValida[linhaBase3][14] = valorD;
-                    linhaBase3++;
-                    if (oSepara.getClasseWine() == 1) {
-                        ctaBase3Classe1++;
-                    } else if (oSepara.getClasseWine() == 2) {
-                        ctaBase3Classe2++;
-                    } else if (oSepara.getClasseWine() == 3) {
-                        ctaBase3Classe3++;
+                } else {
+                    if (nroRandomico <= 69) {
+                        sorteia = 1;
+                    } else if (nroRandomico > 69 && nroRandomico <= 99) {
+                        sorteia = 2;
                     }
                 }
+                int classeElemento = oSepara.getClasseWine();
+                //valida sorteio
+                if (sorteia == 1 && linhaBase1 < tamBaseTreina
+                        && ((oSepara.getClasseWine() == 1 && ctaBase1Classe1 < nroBaseTreinaC1)
+                        || (oSepara.getClasseWine() == 2 && ctaBase1Classe2 < nroBaseTreinaC2)
+                        || (oSepara.getClasseWine() == 3 && ctaBase1Classe3 < nroBaseTreinaC3))) {
+                    passa = false;
+                } else if (sorteia == 2 && linhaBase2 < tamBaseTeste
+                        && ((oSepara.getClasseWine() == 1 && ctaBase2Classe1 < nroBaseTesteC1)
+                        || (oSepara.getClasseWine() == 2 && ctaBase2Classe2 < nroBaseTesteC2)
+                        || (oSepara.getClasseWine() == 3 && ctaBase2Classe3 < nroBaseTesteC3))) {
+                    passa = false;
+                } else if (sorteia == 3 && linhaBase3 < tamBaseValida
+                        && ((oSepara.getClasseWine() == 1 && ctaBase3Classe1 < nroBaseValidaC1)
+                        || (oSepara.getClasseWine() == 2 && ctaBase3Classe2 < nroBaseValidaC2)
+                        || (oSepara.getClasseWine() == 3 && ctaBase3Classe3 < nroBaseValidaC3))) {
+                    passa = false;
+                }
+            } while (passa);
+
+            if (sorteia == 1) {
+                //base treinamento
+                baseTreina[linhaBase1][0] = oSepara.getA1();
+                baseTreina[linhaBase1][1] = oSepara.getA2();
+                baseTreina[linhaBase1][2] = oSepara.getA3();
+                baseTreina[linhaBase1][3] = oSepara.getA4();
+                baseTreina[linhaBase1][4] = oSepara.getA5();
+                baseTreina[linhaBase1][5] = oSepara.getA6();
+                baseTreina[linhaBase1][6] = oSepara.getA7();
+                baseTreina[linhaBase1][7] = oSepara.getA8();
+                baseTreina[linhaBase1][8] = oSepara.getA9();
+                baseTreina[linhaBase1][9] = oSepara.getA10();
+                baseTreina[linhaBase1][10] = oSepara.getA11();
+                baseTreina[linhaBase1][11] = oSepara.getA12();
+                baseTreina[linhaBase1][12] = oSepara.getA13();
+                baseTreina[linhaBase1][13] = oSepara.getClasseWine();
+                baseTreina[linhaBase1][14] = valorD;
+                linhaBase1++;
+                if (oSepara.getClasseWine() == 1) {
+                    ctaBase1Classe1++;
+                } else if (oSepara.getClasseWine() == 2) {
+                    ctaBase1Classe2++;
+                } else if (oSepara.getClasseWine() == 3) {
+                    ctaBase1Classe3++;
+                }
+            } else if (sorteia == 2) {
+                //base teste
+                baseTeste[linhaBase2][0] = oSepara.getA1();
+                baseTeste[linhaBase2][1] = oSepara.getA2();
+                baseTeste[linhaBase2][2] = oSepara.getA3();
+                baseTeste[linhaBase2][3] = oSepara.getA4();
+                baseTeste[linhaBase2][4] = oSepara.getA5();
+                baseTeste[linhaBase2][5] = oSepara.getA6();
+                baseTeste[linhaBase2][6] = oSepara.getA7();
+                baseTeste[linhaBase2][7] = oSepara.getA8();
+                baseTeste[linhaBase2][8] = oSepara.getA9();
+                baseTeste[linhaBase2][9] = oSepara.getA10();
+                baseTeste[linhaBase2][10] = oSepara.getA11();
+                baseTeste[linhaBase2][11] = oSepara.getA12();
+                baseTeste[linhaBase2][12] = oSepara.getA13();
+                baseTeste[linhaBase2][13] = oSepara.getClasseWine();
+                baseTeste[linhaBase2][14] = valorD;
+                linhaBase2++;
+                if (oSepara.getClasseWine() == 1) {
+                    ctaBase2Classe1++;
+                } else if (oSepara.getClasseWine() == 2) {
+                    ctaBase2Classe2++;
+                } else if (oSepara.getClasseWine() == 3) {
+                    ctaBase2Classe3++;
+                }
+            } else if (sorteia == 3) {
+                //base valida
+                baseValida[linhaBase3][0] = oSepara.getA1();
+                baseValida[linhaBase3][1] = oSepara.getA2();
+                baseValida[linhaBase3][2] = oSepara.getA3();
+                baseValida[linhaBase3][3] = oSepara.getA4();
+                baseValida[linhaBase3][4] = oSepara.getA5();
+                baseValida[linhaBase3][5] = oSepara.getA6();
+                baseValida[linhaBase3][6] = oSepara.getA7();
+                baseValida[linhaBase3][7] = oSepara.getA8();
+                baseValida[linhaBase3][8] = oSepara.getA9();
+                baseValida[linhaBase3][9] = oSepara.getA10();
+                baseValida[linhaBase3][10] = oSepara.getA11();
+                baseValida[linhaBase3][11] = oSepara.getA12();
+                baseValida[linhaBase3][12] = oSepara.getA13();
+                baseValida[linhaBase3][13] = oSepara.getClasseWine();
+                baseValida[linhaBase3][14] = valorD;
+                linhaBase3++;
+                if (oSepara.getClasseWine() == 1) {
+                    ctaBase3Classe1++;
+                } else if (oSepara.getClasseWine() == 2) {
+                    ctaBase3Classe2++;
+                } else if (oSepara.getClasseWine() == 3) {
+                    ctaBase3Classe3++;
+                }
+            }
+        }
+    }
+
+    static private void atualizaBases(int classe) {
+        int tamBaseTreina = baseTreina.length;
+        int tamBaseTeste = baseTeste.length;
+        int tamBaseValida = 0;
+
+        if (!(baseValida == null)) {
+            tamBaseValida = baseValida.length;
+        }
+
+        int valorD = 1;
+        for (int x = 0; x < tamBaseTreina; x++) {
+            if (baseTreina[x][13] == classe) {
+                baseTreina[x][14] = valorD;
+            } else {
+                baseTreina[x][14] = 0;
+            }
+        }
+
+        for (int x = 0; x < tamBaseTeste; x++) {
+            if (baseTeste[x][13] == classe) {
+                baseTeste[x][14] = valorD;
+            } else {
+                baseTeste[x][14] = 0;
+            }
+        }
+
+        for (int x = 0; x < tamBaseValida; x++) {
+            if (baseValida[x][13] == classe) {
+                baseValida[x][14] = valorD;
+            } else {
+                baseValida[x][14] = 0;
             }
         }
     }
